@@ -1,0 +1,5 @@
+import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { createProof } from './api';
+import { todayQuests } from './domain';
+beforeEach(()=>vi.restoreAllMocks());
+describe('createProof',()=>{it('creates a session, signs the server challenge, and completes it',async()=>{const fetchMock=vi.spyOn(globalThis,'fetch').mockImplementation(async (url,init)=>{const body=JSON.parse(String(init?.body)); if(String(url).endsWith('/api/sessions')) {expect(body.wallet).toBe('NQuser'); return new Response(JSON.stringify({sessionId:'s1',sessionHash:'h'}),{status:201});} if(String(url).endsWith('/api/challenges')) {expect(body.sessionId).toBe('s1'); return new Response(JSON.stringify({challengeId:'c1',message:'signed challenge'}),{status:201});} expect(String(url)).toContain('/api/complete'); expect(body.signature).toBe('sig'); return new Response(JSON.stringify({receiptId:'r1',pointsAwarded:10}),{status:201});}); const result=await createProof(todayQuests()[2],'NQuser',async message=>{expect(message).toBe('signed challenge'); return {publicKey:'pk',signature:'sig'};}); expect(result.receiptId).toBe('r1'); expect(fetchMock).toHaveBeenCalledTimes(3);});});
