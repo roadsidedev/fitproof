@@ -10,6 +10,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@nimiq/core": "^2.21.0",
     "@nimiq/mini-app-sdk": "^0.1.0",
     "@vitejs/plugin-react": "latest",
     "react": "latest",
@@ -18,11 +19,13 @@
     "vite": "latest"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260904.1",
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "jsdom": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "wrangler": "^4.129.0"
   }
 }

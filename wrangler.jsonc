@@ -1,0 +1,8 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fitproof-api",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-04",
+  "d1_databases": [{"binding":"DB","database_name":"fitproof","database_id":"REPLACE_WITH_D1_DATABASE_ID","migrations_dir":"worker/migrations"}],
+  "vars": {"ALLOWED_ORIGIN":"https://REPLACE_WITH_MINI_APP_ORIGIN"}
+}

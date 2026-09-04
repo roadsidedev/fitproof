@@ -1,0 +1,11 @@
+PRAGMA foreign_keys = ON;
+CREATE TABLE IF NOT EXISTS accounts (wallet TEXT PRIMARY KEY, display_name TEXT, device_id TEXT, points_balance INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0, last_quest_day TEXT);
+CREATE TABLE IF NOT EXISTS sessions (session_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, quest_type TEXT NOT NULL CHECK (quest_type IN ('steps','move','circuit')), quest_id TEXT NOT NULL, day_key TEXT NOT NULL, started_at TEXT NOT NULL, ended_at TEXT NOT NULL, duration_sec INTEGER NOT NULL, payload_json TEXT NOT NULL, session_hash TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS challenges (challenge_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, session_hash TEXT NOT NULL, quest_id TEXT NOT NULL, day_key TEXT NOT NULL, nonce TEXT NOT NULL UNIQUE, issued_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, used_at INTEGER);
+CREATE TABLE IF NOT EXISTS receipts (receipt_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, quest_id TEXT NOT NULL, day_key TEXT NOT NULL, session_hash TEXT NOT NULL UNIQUE, challenge_id TEXT NOT NULL UNIQUE, signature TEXT NOT NULL, public_key TEXT NOT NULL, points_awarded INTEGER NOT NULL, created_at TEXT NOT NULL, UNIQUE(wallet, quest_id, day_key));
+CREATE TABLE IF NOT EXISTS pool (item_id TEXT PRIMARY KEY, type TEXT NOT NULL, label TEXT NOT NULL, amount TEXT, stock INTEGER NOT NULL, cost_points INTEGER NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS claims (claim_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, item_id TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('pending','paid','failed')), tx_hash TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS feed (event_id TEXT PRIMARY KEY, wallet TEXT NOT NULL, kind TEXT NOT NULL, label TEXT NOT NULL, receipt_id TEXT, claim_id TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS rate_limits (rate_key TEXT PRIMARY KEY, window_start INTEGER NOT NULL, request_count INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS receipts_day_idx ON receipts(day_key, points_awarded DESC);
+CREATE INDEX IF NOT EXISTS feed_created_idx ON feed(created_at DESC);
