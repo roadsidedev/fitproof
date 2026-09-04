@@ -1,0 +1,4 @@
+import { describe, expect, it, vi } from 'vitest';
+import { createNimiqWallet } from './wallet';
+const provider = (overrides: Record<string, unknown> = {}) => ({ listAccounts: vi.fn().mockResolvedValue(['NQuser']), sign: vi.fn().mockResolvedValue({publicKey:'pk',signature:'sig'}), ...overrides }) as never;
+describe('Nimiq wallet adapter',()=>{it('returns the selected account',async()=>expect(await createNimiqWallet(provider()).connect()).toBe('NQuser'));it('returns the native signature result',async()=>expect(await createNimiqWallet(provider()).sign('challenge')).toMatchObject({signature:'sig'}));it('surfaces no-account state',async()=>await expect(createNimiqWallet(provider({listAccounts:vi.fn().mockResolvedValue([])})).connect()).rejects.toThrow('no-account'));it('surfaces signing rejection',async()=>await expect(createNimiqWallet(provider({sign:vi.fn().mockRejectedValue(new Error('cancelled'))})).sign('challenge')).rejects.toThrow('user-rejected'));});
