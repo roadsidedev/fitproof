@@ -1,0 +1,29 @@
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { canCompleteQuest, formatTime, Quest, todayQuests } from './domain';
+import './styles.css';
+
+type View = 'today' | 'player' | 'done';
+function App() {
+  const [view, setView] = useState<View>('today');
+  const [selected, setSelected] = useState<Quest | null>(null);
+  const [level, setLevel] = useState<'beginner'|'regular'>('beginner');
+  const [completed, setCompleted] = useState<string[]>([]);
+  const quests = todayQuests(level);
+  const start = (quest: Quest) => { setSelected(quest); setView('player'); };
+  const finish = () => { if (!selected) return; setCompleted((items) => [...new Set([...items, selected.id])]); setView('done'); };
+  return <main className="app">
+    <header className="topbar"><div className="brand"><span className="brand-mark">✦</span><span>FIT<span className="accent">PROOF</span></span></div><button className="wallet">Connect wallet <span>↗</span></button></header>
+    {view === 'today' && <><section className="hero"><p className="eyebrow">THURSDAY · SEPTEMBER 4</p><h1>Move with purpose.</h1><p className="muted">Your wallet signs that you completed this app quest.</p><div className="streak"><span className="flame">♨</span><div><strong>{completed.length ? 1 : 0} day streak</strong><small>Keep your momentum alive</small></div></div></section><section className="section-head"><div><p className="eyebrow">TODAY'S QUESTS</p><h2>Pick one to get moving</h2></div><span className="progress">{completed.length}/3</span></section><div className="quest-grid">{quests.map((quest) => <article className={`quest-card ${completed.includes(quest.id) ? 'complete' : ''}`} key={quest.id}><div className="quest-icon">{quest.type === 'circuit' ? '◈' : quest.type === 'move' ? '◒' : '⌁'}</div><div className="quest-copy"><span className="tag">{quest.type}</span><h3>{quest.title}</h3><p>{quest.subtitle}</p><div className="meta"><span>+{quest.points} pts</span><span>◷ {quest.durationMin} min</span></div></div><button className="card-action" onClick={() => start(quest)}>{completed.includes(quest.id) ? 'Done' : 'Start'} <span>→</span></button></article>)}</div><section className="pool"><div><p className="eyebrow">REWARD POOL</p><h2>Earn from what's stocked</h2><p className="muted">10 points unlocks a pool item. Current pool has <strong>2 NIM</strong>, AI credits, and partner perks.</p></div><span className="pool-badge">10 pts<br/><small>to claim</small></span></section><nav className="bottom-nav"><button className="active">Today</button><button>History</button><button>Board</button><button>Settings</button></nav></>}
+    {view === 'player' && selected && <Player quest={selected} onBack={() => setView('today')} onFinish={finish} />}
+    {view === 'done' && selected && <section className="center-screen"><div className="success-mark">✓</div><p className="eyebrow">SESSION COMPLETE</p><h1>Nice work.</h1><p className="muted">Your session is saved locally. Prove it with a wallet signature to appear on the board and claim rewards.</p><div className="summary"><span>+{selected.points} points</span><span>Grade A</span></div><button className="primary" onClick={() => setView('today')}>Back to today <span>→</span></button></section>}
+    <footer>Bodyweight movement only · Not medical advice · <button onClick={() => setLevel(level === 'beginner' ? 'regular' : 'beginner')}>Level: {level}</button></footer>
+  </main>;
+}
+function Player({ quest, onBack, onFinish }: {quest: Quest; onBack:()=>void; onFinish:()=>void}) {
+  const [seconds, setSeconds] = useState(quest.durationMin * 60); const [progress, setProgress] = useState(quest.type === 'circuit' ? 0 : 0); const [running, setRunning] = useState(false);
+  useEffect(() => { if (!running || seconds <= 0) return; const id = window.setInterval(() => setSeconds(s => Math.max(0, s - 1)), 1000); return () => window.clearInterval(id); }, [running, seconds]);
+  const isCircuit = quest.type === 'circuit'; const complete = isCircuit ? canCompleteQuest(quest, progress) : seconds === 0;
+  return <section className="player"><button className="back" onClick={onBack}>← Today</button><div className="player-heading"><span className="tag">{quest.type} quest</span><h1>{quest.title}</h1><p className="muted">{quest.subtitle}</p></div>{isCircuit ? <><div className="exercise-list">{quest.exercises?.map((exercise, index) => <div className={`exercise ${progress >= (index+1)*25 ? 'checked' : ''}`} key={exercise.id}><span className="exercise-number">0{index+1}</span><div><strong>{exercise.name}</strong><small>{exercise.target}</small></div><button onClick={() => setProgress(p => Math.min(100, p + 25))}>{progress >= (index+1)*25 ? '✓' : '+'}</button></div>)}</div><div className="round-note">Complete each move once · repeat for 2 rounds</div></> : <div className="timer"><span>{quest.type === 'steps' ? 'Timed walk fallback' : 'Keep moving'}</span><strong>{formatTime(seconds)}</strong><div className="timer-ring" style={{'--progress': `${(1 - seconds/(quest.durationMin*60))*360}deg`} as React.CSSProperties}></div></div>}<button className="primary" onClick={() => isCircuit ? (complete ? onFinish() : setProgress(p => Math.min(100, p + 25))) : (complete ? onFinish() : setRunning(!running))}>{complete ? 'Finish session' : running ? 'Pause timer' : isCircuit ? 'Complete next move' : 'Start timer'} <span>→</span></button><p className="honesty">No health data is collected. Your proof attests to completing this app session.</p></section>;
+}
+createRoot(document.getElementById('root')!).render(<App />);
