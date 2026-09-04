@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { canCompleteQuest, formatTime, Quest, todayQuests } from './domain';
+import { issueChallenge, maskWallet, verifyChallenge, Receipt } from './proof';
 import './styles.css';
 
 type View = 'today' | 'player' | 'done';
@@ -9,6 +10,7 @@ function App() {
   const [selected, setSelected] = useState<Quest | null>(null);
   const [level, setLevel] = useState<'beginner'|'regular'>('beginner');
   const [completed, setCompleted] = useState<string[]>([]);
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
   const quests = todayQuests(level);
   const start = (quest: Quest) => { setSelected(quest); setView('player'); };
   const finish = () => { if (!selected) return; setCompleted((items) => [...new Set([...items, selected.id])]); setView('done'); };
@@ -16,7 +18,7 @@ function App() {
     <header className="topbar"><div className="brand"><span className="brand-mark">✦</span><span>FIT<span className="accent">PROOF</span></span></div><button className="wallet">Connect wallet <span>↗</span></button></header>
     {view === 'today' && <><section className="hero"><p className="eyebrow">THURSDAY · SEPTEMBER 4</p><h1>Move with purpose.</h1><p className="muted">Your wallet signs that you completed this app quest.</p><div className="streak"><span className="flame">♨</span><div><strong>{completed.length ? 1 : 0} day streak</strong><small>Keep your momentum alive</small></div></div></section><section className="section-head"><div><p className="eyebrow">TODAY'S QUESTS</p><h2>Pick one to get moving</h2></div><span className="progress">{completed.length}/3</span></section><div className="quest-grid">{quests.map((quest) => <article className={`quest-card ${completed.includes(quest.id) ? 'complete' : ''}`} key={quest.id}><div className="quest-icon">{quest.type === 'circuit' ? '◈' : quest.type === 'move' ? '◒' : '⌁'}</div><div className="quest-copy"><span className="tag">{quest.type}</span><h3>{quest.title}</h3><p>{quest.subtitle}</p><div className="meta"><span>+{quest.points} pts</span><span>◷ {quest.durationMin} min</span></div></div><button className="card-action" onClick={() => start(quest)}>{completed.includes(quest.id) ? 'Done' : 'Start'} <span>→</span></button></article>)}</div><section className="pool"><div><p className="eyebrow">REWARD POOL</p><h2>Earn from what's stocked</h2><p className="muted">10 points unlocks a pool item. Current pool has <strong>2 NIM</strong>, AI credits, and partner perks.</p></div><span className="pool-badge">10 pts<br/><small>to claim</small></span></section><nav className="bottom-nav"><button className="active">Today</button><button>History</button><button>Board</button><button>Settings</button></nav></>}
     {view === 'player' && selected && <Player quest={selected} onBack={() => setView('today')} onFinish={finish} />}
-    {view === 'done' && selected && <section className="center-screen"><div className="success-mark">✓</div><p className="eyebrow">SESSION COMPLETE</p><h1>Nice work.</h1><p className="muted">Your session is saved locally. Prove it with a wallet signature to appear on the board and claim rewards.</p><div className="summary"><span>+{selected.points} points</span><span>Grade A</span></div><button className="primary" onClick={() => setView('today')}>Back to today <span>→</span></button></section>}
+    {view === 'done' && selected && <section className="center-screen"><div className="success-mark">✓</div><p className="eyebrow">SESSION COMPLETE</p><h1>{receipt ? 'Proof signed.' : 'Nice work.'}</h1><p className="muted">{receipt ? `Receipt ${receipt.receiptId.slice(0, 8)} is verified for ${maskWallet(receipt.wallet)}.` : 'Your session is saved locally. Prove it with a wallet signature to appear on the board and claim rewards.'}</p><div className="summary"><span>+{selected.points} points</span><span>Grade A</span></div>{!receipt && <button className="primary" onClick={() => { const c = issueChallenge({sessionId: crypto.randomUUID(), wallet:'NQxx123456789', questId:selected.id, dayKey:'2026-09-04', sessionHash:'local-session', durationSec:selected.durationMin*60, completed:true}); const result = verifyChallenge(c, 'mock-wallet-signature', c.wallet); if (typeof result !== 'string') setReceipt(result); }}>Prove it with wallet <span>→</span></button>}<button className={receipt ? 'primary' : 'secondary'} onClick={() => { setReceipt(null); setView('today'); }}>Back to today <span>→</span></button></section>}
     <footer>Bodyweight movement only · Not medical advice · <button onClick={() => setLevel(level === 'beginner' ? 'regular' : 'beginner')}>Level: {level}</button></footer>
   </main>;
 }
