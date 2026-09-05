@@ -1,0 +1,6 @@
+{
+  "license": "Unlicense",
+  "source": "https://github.com/yuhonas/free-exercise-db",
+  "revision": "main",
+  "assets": ["Bodyweight_Squat", "Incline_Push-Up", "Plank", "Butt_Lift_Bridge", "Bodyweight_Walking_Lunge", "Superman"]
+}

@@ -1,0 +1,2 @@
+const imageByExercise: Record<string,string> = { squat:'/exercises/Bodyweight_Squat/0.jpg', 'knee-pushup':'/exercises/Incline_Push-Up/0.jpg', plank:'/exercises/Plank/0.jpg', bridge:'/exercises/Butt_Lift_Bridge/0.jpg', lunge:'/exercises/Bodyweight_Walking_Lunge/0.jpg', superman:'/exercises/Superman/0.jpg' };
+export function imageForExercise(id:string): string | undefined { return imageByExercise[id]; }
