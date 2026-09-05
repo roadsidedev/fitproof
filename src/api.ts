@@ -7,3 +7,6 @@ export async function createProof(quest: Quest, wallet: string, signature: (mess
 export const getPool = () => request('/api/pool'); export const getFeed = () => request('/api/feed'); export const getLeaderboard = () => request('/api/leaderboard');
 export const getHistory = (wallet: string) => request<{results:Array<{receiptId:string;questId:string;dayKey:string;pointsAwarded:number;createdAt:string}>}>(`/api/history?wallet=${encodeURIComponent(wallet)}`);
 export const createClaim = (wallet: string, itemId: string) => request<{claimId:string;status:string;label:string}>('/api/claims', {method:'POST', body:JSON.stringify({wallet,itemId})});
+
+export const getSettings = (wallet: string) => request<{stepGoal:number}>(`/api/settings?wallet=${encodeURIComponent(wallet)}`);
+export const updateSettings = (wallet: string, stepGoal: number) => request<{stepGoal:number}>('/api/settings', {method:'PUT', body:JSON.stringify({wallet,stepGoal})});
