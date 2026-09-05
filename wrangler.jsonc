@@ -3,6 +3,6 @@
   "name": "fitproof-api",
   "main": "worker/index.ts",
   "compatibility_date": "2026-09-04",
-  "d1_databases": [{"binding":"DB","database_name":"fitproof","database_id":"REPLACE_WITH_D1_DATABASE_ID","migrations_dir":"worker/migrations"}],
+  "d1_databases": [{"binding":"DB","database_name":"fitproof","database_id":"36f5e2d5-8596-4636-a17b-f0a5c24814d7","migrations_dir":"worker/migrations"}],
   "vars": {"ALLOWED_ORIGIN":"https://REPLACE_WITH_MINI_APP_ORIGIN"}
 }
